@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community | PIPOLE GROUP</title>
+    <meta name="description" content="Entdecke die Community von PIPOLE GROUP und die YouTube-Kanäle unserer Creator.">
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .community-page {
+            width: min(100% - 32px, 1000px);
+            margin: 0 auto;
+            padding: 30px 0 50px;
+            color: #fff;
+        }
+
+        .community-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .community-brand {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .community-brand h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .community-brand p {
+            margin: 5px 0 0;
+            color: #c5c5c5;
+            font-size: 0.9rem;
+        }
+
+        .community-menu {
+            display: inline-block;
+            padding: 12px 18px;
+            border: 1px solid #454545;
+            border-radius: 12px;
+            color: #fff;
+            text-decoration: none;
+            background: #171717;
+            transition: background 0.2s;
+        }
+
+        .community-menu:hover {
+            background: #292929;
+        }
+
+        .community-title {
+            text-align: center;
+            margin: 40px 0 35px;
+        }
+
+        .community-title h1 {
+            margin-bottom: 12px;
+            font-size: clamp(1.8rem, 5vw, 2.7rem);
+        }
+
+        .community-title p {
+            color: #c5c5c5;
+            line-height: 1.7;
+        }
+
+        .community-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .community-card {
+            display: grid;
+            grid-template-columns: 110px minmax(0, 1fr);
+            align-items: center;
+            gap: 22px;
+            padding: 22px;
+            color: #fff;
+            text-decoration: none;
+            background: #151515;
+            border: 1px solid #383838;
+            border-radius: 18px;
+            transition: border-color 0.2s, background 0.2s,
+                        transform 0.2s;
+        }
+
+        .community-card:hover {
+            background: #1d1d1d;
+            border-color: #d94f9c;
+            transform: translateY(-2px);
+        }
+
+        .community-avatar {
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 16px;
+            background: #292929;
+            border: 1px solid #414141;
+        }
+
+        .community-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .community-avatar-placeholder {
+            color: #ff5555;
+            font-size: 2.6rem;
+            font-weight: bold;
+        }
+
+        .community-info {
+            min-width: 0;
+        }
+
+        .community-info h2 {
+            margin: 0 0 10px;
+            font-size: 1.45rem;
+            overflow-wrap: anywhere;
+        }
+
+        .community-description {
+            margin: 0;
+            color: #c5c5c5;
+            font-size: 0.98rem;
+            line-height: 1.7;
+        }
+
+        .community-platform {
+            display: inline-block;
+            margin-top: 12px;
+            color: #ff6666;
+            font-size: 0.9rem;
+        }
+
+        .community-footer {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .community-footer a {
+            color: #d5d5d5;
+            text-decoration: none;
+        }
+
+        .community-footer a:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 520px) {
+            .community-page {
+                width: min(100% - 24px, 1000px);
+                padding-top: 20px;
+            }
+
+            .community-card {
+                grid-template-columns: 76px minmax(0, 1fr);
+                gap: 14px;
+                padding: 14px;
+            }
+
+            .community-avatar {
+                width: 76px;
+                height: 76px;
+                border-radius: 12px;
+            }
+
+            .community-info h2 {
+                font-size: 1.15rem;
+            }
+
+            .community-description {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .community-brand h2 {
+                font-size: 1.2rem;
+            }
+
+            .community-menu {
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="community-page">
+
+        <!-- KOPFBEREICH -->
+        <header class="community-header">
+
+            <!-- Logo/Name führt zur Startseite -->
+            <a class="community-brand" href="https://www.pipole.de/">
+                <h2>PIPOLE GROUP</h2>
+                <p>7 Leben. Vereint in PIPOLE.</p>
+            </a>
+
+            <!-- Menü -->
+            <a class="community-menu" href="/menu">
+                ☰ Menü
+            </a>
+
+        </header>
+
+        <!-- SEITENTITEL -->
+        <section class="community-title">
+            <h1>UNSERE COMMUNITY</h1>
+            <p>
+                Entdecke die YouTube-Kanäle unserer Community
+                und lerne die Creator kennen.
+            </p>
+        </section>
+
+        <!--
+            COMMUNITY-MITGLIEDER
+
+            Für jedes neue Mitglied den gesamten community-card-Block
+            kopieren und darunter einfügen.
+
+            Anschließend Name, Bild, Beschreibung und YouTube-Link ändern.
+        -->
+        <section class="community-list">
+
+            <!-- MITGLIED 1: RAYZZERZOCKT -->
+            <a
+                class="community-card"
+                href="https://www.youtube.com/@RayzzerZockt"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube-Kanal von RayzzerZockt öffnen"
+            >
+
+                <!-- PROFILBILD LINKS -->
+                <div class="community-avatar">
+                    <img
+                        src="assets/community/rayzzerzockt.png"
+                        alt="Profilbild von RayzzerZockt"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                    >
+                    <span
+                        class="community-avatar-placeholder"
+                        style="display: none;"
+                        aria-hidden="true"
+                    >R</span>
+                </div>
+
+                <!-- NAME OBEN, BESCHREIBUNG UNTEN -->
+                <div class="community-info">
+                    <h2>RayzzerZockt</h2>
+
+                    <p class="community-description">
+                        Hier kommt die Kurzbeschreibung von RayzzerZockt hin.
+                        Beschreibe kurz, welche Inhalte auf dem Kanal zu
+                        finden sind.
+                    </p>
+
+                    <span class="community-platform">
+                        ▶ YouTube-Kanal besuchen
+                    </span>
+                </div>
+
+            </a>
+
+            <!--
+                VORLAGE FÜR WEITERE MITGLIEDER
+
+                Diesen Block kopieren und unter dem ersten Mitglied einfügen.
+
+                1. Link bei href austauschen
+                2. Bildpfad und alt-Text austauschen
+                3. Buchstaben im Platzhalter anpassen
+                4. Namen und Kurzbeschreibung ändern
+
+            <a
+                class="community-card"
+                href="YOUTUBE-KANAL-LINK"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <div class="community-avatar">
+                    <img
+                        src="assets/community/NAME.png"
+                        alt="Profilbild von NAME"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                    >
+                    <span
+                        class="community-avatar-placeholder"
+                        style="display: none;"
+                        aria-hidden="true"
+                    >N</span>
+                </div>
+
+                <div class="community-info">
+                    <h2>NAME</h2>
+
+                    <p class="community-description">
+                        HIER DIE KURZBESCHREIBUNG EINFÜGEN.
+                    </p>
+
+                    <span class="community-platform">
+                        ▶ YouTube-Kanal besuchen
+                    </span>
+                </div>
+            </a>
+
+            ENDE DER VORLAGE -->
+
+        </section>
+
+        <!-- ZURÜCK -->
+        <footer class="community-footer">
+            <a href="https://www.pipole.de/">
+                ← Zurück zur Startseite
+            </a>
+        </footer>
+
+    </main>
+
+</body>
+</html>
