@@ -5,6 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIPOLE GROUP</title>
     <link rel="stylesheet" href="style.css">
+
+    
+    <style>
+        .modding-ad {
+            width: min(900px, calc(100% - 32px));
+            margin: 15px auto 45px;
+            padding: 3px;
+            border-radius: 20px;
+            background: linear-gradient(
+                110deg,
+                #e64c76,
+                #ed934b,
+                #e7cf55,
+                #69c982,
+                #55a8e8,
+                #a16ae0
+            );
+            box-sizing: border-box;
+        }
+
+        .modding-ad-content {
+            padding: 30px 25px;
+            border-radius: 17px;
+            background: #111;
+            color: #fff;
+            text-align: center;
+        }
+
+        .modding-ad-label {
+            display: inline-block;
+            margin-bottom: 10px;
+            color: #f3a0cd;
+            font-size: 0.85rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .modding-ad-content h2 {
+            margin: 0 0 15px;
+            font-size: clamp(1.6rem, 4vw, 2.3rem);
+            line-height: 1.25;
+        }
+
+        .modding-ad-content p {
+            max-width: 680px;
+            margin: 0 auto 22px;
+            color: #d0d0d0;
+            line-height: 1.8;
+        }
+
+        .modding-ad-button {
+            display: inline-block;
+            padding: 13px 22px;
+            border: 1px solid #555;
+            border-radius: 12px;
+            background: #252525;
+            color: #fff;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .modding-ad-button:hover {
+            background: #353535;
+            border-color: #f3a0cd;
+        }
+
+        @media (max-width: 520px) {
+            .modding-ad {
+                width: calc(100% - 24px);
+                margin-bottom: 35px;
+            }
+
+            .modding-ad-content {
+                padding: 25px 17px;
+            }
+
+            .modding-ad-button {
+                display: block;
+                padding: 13px 12px;
+            }
+        }
+    </style>
+
 </head>
 <body>
 
@@ -28,6 +112,29 @@
         Es sind noch nicht alle Features verfügbar und einzelne Unterseiten können zeitweise nicht funktionieren!
     </div>
 
+
+    <!-- PIPOLE MODDING – MITARBEITER GESUCHT -->
+    <section class="modding-ad" aria-labelledby="modding-ad-title">
+
+        <div class="modding-ad-content">
+            <span class="modding-ad-label">PIPOLE MODDING</span>
+
+            <h2 id="modding-ad-title">MITARBEITER GESUCHT!</h2>
+
+            <p>
+                Du hast Lust auf OMSI 2, Fahrzeugmodding, Repaints
+                oder Beta-Tests? Unterstütze unsere Projekte und
+                entwickle gemeinsam mit uns neue Inhalte für den Bahnverkehr.
+            </p>
+
+            <a href="/mitarbeitergesucht" class="modding-ad-button">
+                Jetzt informieren und mitmachen →
+            </a>
+        </div>
+
+    </section>
+
+    
     <!-- PROJEKTE UND MENÜ -->
     <section class="projects" id="projects" style="padding-top: 20px;">
 
@@ -97,4 +204,3 @@
 
 </body>
 </html>
-```
