@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mitarbeiter gesucht! | PIPOLE Modding</title>
+    <meta name="description" content="Unterstütze PIPOLE Modding bei OMSI-2-Projekten! Gesucht werden Fahrzeugmodder, Repaint-Ersteller und zuverlässige Beta-Tester.">
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .staff-page {
+            width: min(100% - 32px, 1000px);
+            margin: 0 auto;
+            padding: 25px 0 55px;
+            color: #f5f5f5;
+            line-height: 1.8;
+        }
+
+        .staff-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 35px;
+        }
+
+        .staff-brand {
+            color: inherit;
+            text-decoration: none;
+            line-height: 1.4;
+        }
+
+        .staff-brand strong {
+            display: block;
+            font-size: 1.35rem;
+        }
+
+        .staff-brand span {
+            color: #c5c5c5;
+            font-size: 0.9rem;
+        }
+
+        .staff-menu {
+            display: inline-block;
+            padding: 10px 16px;
+            border: 1px solid #444;
+            border-radius: 10px;
+            color: #fff;
+            background: #191919;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .staff-menu:hover {
+            background: #292929;
+        }
+
+        .staff-hero {
+            padding: clamp(24px, 5vw, 48px);
+            margin-bottom: 35px;
+            border: 1px solid #414141;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #191919, #0c0c0c);
+            text-align: center;
+        }
+
+        .staff-label {
+            display: inline-block;
+            padding: 5px 13px;
+            margin-bottom: 12px;
+            border: 1px solid #a84378;
+            border-radius: 30px;
+            color: #ff9bd0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .staff-hero h1 {
+            margin: 0 0 12px;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            line-height: 1.2;
+        }
+
+        .staff-hero p {
+            max-width: 720px;
+            margin: 0 auto;
+            color: #d0d0d0;
+        }
+
+        .staff-accent {
+            width: 100%;
+            height: 4px;
+            margin-top: 25px;
+            border-radius: 5px;
+            background: linear-gradient(
+                90deg,
+                #e64c76,
+                #ed934b,
+                #e7cf55,
+                #69c982,
+                #55a8e8,
+                #a16ae0
+            );
+        }
+
+        .staff-section {
+            margin: 28px 0;
+            padding: clamp(20px, 4vw, 32px);
+            border: 1px solid #353535;
+            border-radius: 18px;
+            background: rgba(20, 20, 20, 0.94);
+            scroll-margin-top: 20px;
+        }
+
+        .staff-section h2 {
+            margin: 0 0 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #393939;
+            font-size: clamp(1.4rem, 3vw, 1.9rem);
+            line-height: 1.4;
+        }
+
+        .staff-section h3 {
+            margin: 26px 0 10px;
+            color: #f3a0cd;
+            font-size: 1.15rem;
+            line-height: 1.5;
+        }
+
+        .staff-section p {
+            margin: 12px 0;
+        }
+
+        .staff-section ul {
+            padding-left: 24px;
+            margin: 12px 0 20px;
+        }
+
+        .staff-section li {
+            margin: 7px 0;
+            padding-left: 3px;
+        }
+
+        .staff-section a {
+            color: #f2a0ce;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            overflow-wrap: anywhere;
+        }
+
+        .staff-section a:hover {
+            color: #fff;
+        }
+
+        .staff-callout {
+            padding: 17px 20px;
+            margin: 22px 0;
+            border-left: 4px solid #d94f9c;
+            border-radius: 0 12px 12px 0;
+            background: #222;
+        }
+
+        .staff-contact {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .staff-contact a {
+            display: block;
+            padding: 15px;
+            border: 1px solid #414141;
+            border-radius: 12px;
+            background: #202020;
+            text-decoration: none;
+        }
+
+        .staff-contact a:hover {
+            border-color: #d94f9c;
+            background: #292929;
+        }
+
+        .staff-contact strong {
+            display: block;
+            margin-bottom: 3px;
+            color: #fff;
+        }
+
+        .staff-contact span {
+            color: #c5c5c5;
+            font-size: 0.9rem;
+        }
+
+        .staff-signature {
+            margin-top: 25px;
+        }
+
+        .staff-footer {
+            margin-top: 38px;
+            text-align: center;
+        }
+
+        .staff-footer a {
+            color: #d0d0d0;
+            text-decoration: none;
+        }
+
+        .staff-footer a:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 600px) {
+            .staff-page {
+                width: min(100% - 22px, 1000px);
+                padding-top: 18px;
+            }
+
+            .staff-header {
+                align-items: flex-start;
+            }
+
+            .staff-brand strong {
+                font-size: 1.15rem;
+            }
+
+            .staff-menu {
+                padding: 8px 11px;
+                font-size: 0.9rem;
+            }
+
+            .staff-contact {
+                grid-template-columns: 1fr;
+            }
+
+            .staff-section ul {
+                padding-left: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="staff-page">
+
+    <!-- KOPFBEREICH -->
+    <header class="staff-header">
+        <a class="staff-brand" href="https://www.pipole.de/">
+            <strong>PIPOLE GROUP</strong>
+            <span>7 Leben. Vereint in PIPOLE.</span>
+        </a>
+
+        <a class="staff-menu" href="/menu">☰ Menü</a>
+    </header>
+
+    <!-- TITEL -->
+    <section class="staff-hero">
+        <span class="staff-label">PIPOLE MODDING</span>
+        <h1>MITARBEITER GESUCHT!</h1>
+        <p>
+            Unterstütze unsere OMSI-2-Projekte!
+            Gesucht werden Fahrzeugmodder, Repaint-Ersteller
+            und zuverlässige Beta-Tester.
+        </p>
+        <div class="staff-accent"></div>
+    </section>
+
+    <!-- 1. WORUM GEHT ES? -->
+    <section class="staff-section" id="projekt">
+        <h2>1. Worum geht es?</h2>
+
+        <p>Hallo zusammen!</p>
+
+        <p>
+            Bei meinen OMSI-2-Projekten steckt viel Arbeit im Detail.
+            Deshalb suche ich nach motivierten Helfern, die Lust haben,
+            gemeinsam mit mir an neuen Mods zu arbeiten und meine
+            Projekte weiterzuentwickeln.
+        </p>
+
+        <p>
+            Aktuell arbeite ich an einem neuen Projekt, bei dem der
+            Zugverkehr einer bestehenden OMSI-2-Karte umfassend
+            überarbeitet und um zusätzliche Inhalte erweitert werden soll.
+            Ziel ist es, ein möglichst realistisches Gesamtbild zu schaffen –
+            von den eingesetzten Fahrzeugen über die passenden Lackierungen
+            bis hin zu den Fahrplänen.
+        </p>
+
+        <p>
+            Einige der dafür benötigten Fahrzeuge und Lackierungen gibt es
+            allerdings noch nicht oder nicht in passender Form für OMSI 2.
+        </p>
+
+        <div class="staff-callout">
+            <strong>Genau dafür brauche ich eure Unterstützung!</strong>
+            <br>
+            Ob Fahrzeugmodding, Repaints oder Beta-Tests:
+            Jede helfende Hand ist willkommen.
+            Weitere Details zum Projekt werden zu einem späteren Zeitpunkt
+            bekannt gegeben.
+        </div>
+    </section>
+
+    <!-- 2. FAHRZEUGMODDING -->
+    <section class="staff-section" id="fahrzeugmodding">
+        <h2>2. Fahrzeugmodding – langfristige Projekte</h2>
+
+        <p>
+            Für einige der geplanten Zugverkehre werden langfristig neue
+            Fahrzeuge oder Erweiterungen bestehender Modelle benötigt.
+        </p>
+
+        <p>Gesucht werden insbesondere:</p>
+
+        <ul>
+            <li><strong>Siemens Desiro HC</strong> – für den Rhein-Ruhr-Express (RRX) auf dem RE 4</li>
+            <li><strong>Stadler FLIRT 3</strong> – für den RE 13, sowohl für Eurobahn als auch für VIAS</li>
+            <li><strong>Alstom Coradia LINT 41</strong> – für die RheinRuhrBahn auf dem RE 10</li>
+            <li><strong>BR 110 / BR 111</strong> – mögliche Lokomotiven für TRI-Zugverbände</li>
+            <li><strong>Weitere n-Wagen</strong> – zur Erweiterung der verfügbaren TRI-Zugverbände</li>
+            <li><strong>Regiobahn Integral</strong> – für die S 28</li>
+        </ul>
+
+        <p>
+            Dabei handelt es sich um langfristige Aufgaben. Wer Erfahrung
+            mit dem Erstellen, Konvertieren oder Anpassen von Fahrzeugen
+            für OMSI 2 hat, ist besonders willkommen.
+        </p>
+
+        <p>
+            Auch Unterstützung bei einzelnen Bestandteilen, Modellen,
+            Texturen oder technischen Anpassungen kann hilfreich sein.
+        </p>
+    </section>
+
+    <!-- 3. REPAINTS -->
+    <section class="staff-section" id="repaints">
+        <h2>3. Fahrzeug-Repaints – konkret benötigte Lackierungen</h2>
+
+        <p>
+            Neben neuen Fahrzeugen werden passende Lackierungen für bereits
+            vorhandene OMSI-2-Modelle benötigt. Bei einigen Fahrzeugen können
+            die Repaints auch als Übergangslösung dienen, bis ein passendes
+            Modell verfügbar ist.
+        </p>
+
+        <h3>RE 4 – Rhein-Ruhr-Express (RRX)</h3>
+        <ul>
+            <li><strong>BR 445 – Twindexx Vario:</strong> RRX-Lackierung als Ersatz für den Desiro HC</li>
+            <li><strong>Siemens Desiro HC:</strong> RRX-Lackierung, sofern das Fahrzeug für OMSI 2 umgesetzt wird</li>
+        </ul>
+
+        <h3>RE 13 – Eurobahn / VIAS</h3>
+        <p>
+            Für den RE 13 sollen beide Betreiber berücksichtigt werden.
+            Je nach Verfügbarkeit der Fahrzeuge kommen der FLIRT 1 als
+            Alternative oder der FLIRT 3 zum Einsatz.
+        </p>
+
+        <p><strong>Eurobahn:</strong></p>
+        <ul>
+            <li><strong>BR 429 – FLIRT 1:</strong> Eurobahn-Lackierung als alternative Fahrzeugoption</li>
+            <li><strong>Stadler FLIRT 3:</strong> Eurobahn-Lackierung, sofern das Fahrzeug für OMSI 2 umgesetzt wird</li>
+        </ul>
+
+        <p><strong>VIAS:</strong></p>
+        <ul>
+            <li><strong>BR 429 – FLIRT 1:</strong> VIAS-Lackierung als alternative Fahrzeugoption</li>
+            <li><strong>Stadler FLIRT 3:</strong> VIAS-Lackierung, sofern das Fahrzeug für OMSI 2 umgesetzt wird</li>
+        </ul>
+
+        <p>
+            Da die Veröffentlichung des Mods voraussichtlich erst im Frühjahr
+            2027 erfolgt, soll auch der Betreiberwechsel zu VIAS berücksichtigt
+            werden. Die Fahrzeuge beider Betreiber sollen im Projekt verfügbar
+            sein.
+        </p>
+
+        <h3>RE 10 – RheinRuhrBahn</h3>
+        <ul>
+            <li><strong>BR 643 – Talent:</strong> RheinRuhrBahn-Lackierung</li>
+        </ul>
+
+        <p>
+            Das Repaint orientiert sich am realen Vorbild. Der Fahrzeugeinsatz
+            auf der Linie ist teilweise fiktiv, da auf der realen Strecke
+            nicht ausschließlich Talent-Triebwagen verkehren.
+        </p>
+
+        <h3>RB 37 – TRI Train Rental</h3>
+        <ul>
+            <li><strong>n-Wagen:</strong> TRI-Lackierungen für vorhandene Wagen, beispielsweise Bnrzf, Bnrz und weitere passende Wagen</li>
+            <li><strong>BR 101:</strong> TRI-Lackierung für Ersatzzüge</li>
+            <li><strong>BR 143:</strong> TRI-Lackierung</li>
+            <li><strong>BR 145:</strong> TRI-Lackierung</li>
+            <li><strong>BR 112:</strong> TRI-Lackierung</li>
+        </ul>
+
+        <p>
+            Die Zusammenstellung der TRI-Züge ist teilweise fiktiv.
+            Die BR 145 ist besonders interessant, da sie auch im realen
+            Einsatz auf der RB 37 vorkommt. Weitere n-Wagen werden benötigt,
+            um die verfügbaren Ersatzzugverbände zu erweitern.
+        </p>
+
+        <h3>S 28 – Regiobahn</h3>
+        <ul>
+            <li>
+                <strong>Passendes vorhandenes Triebfahrzeug:</strong>
+                Regiobahn-Lackierung als Übergangslösung, solange kein
+                Integral für OMSI 2 verfügbar ist
+            </li>
+        </ul>
+
+        <p>Das konkrete Fahrzeug für diese Lackierung ist noch offen.</p>
+
+        <h3>S 8 – S-Bahn Rhein-Ruhr</h3>
+        <ul>
+            <li>
+                <strong>BR 1440 – Coradia Continental:</strong>
+                Die vorhandene OMSI-2-Version benötigt noch die passenden
+                Logos der S-Bahn Rhein-Ruhr. Aktuell ist lediglich eine
+                allgemeine DB-Regio-Lackierung vorhanden.
+            </li>
+            <li>
+                <strong>BR 422:</strong>
+                Eine grüne VRR-Lackierung ist bereits im DLC Velbert enthalten.
+                Die BR 422 kommt daher voraussichtlich als Alternative zum
+                BR 1440 zum Einsatz.
+            </li>
+        </ul>
+
+        <h3>RE 7 – National Express</h3>
+        <ul>
+            <li>
+                <strong>BR 442 – Talent 2:</strong>
+                Eine passende National-Express-Lackierung ist bereits vorhanden.
+            </li>
+        </ul>
+    </section>
+
+    <!-- 4. BETA-TESTER -->
+    <section class="staff-section" id="betatester">
+        <h2>4. Beta-Tester gesucht!</h2>
+
+        <p>
+            Neben Fahrzeugmoddern und Repaint-Erstellern suche ich auch
+            zuverlässige Beta-Tester, die die fertigen Inhalte vor der
+            Veröffentlichung ausprobieren und mögliche Fehler melden.
+        </p>
+
+        <p>Zu den Aufgaben gehören:</p>
+
+        <ul>
+            <li>Fahrpläne und Zugfahrten gemeinsam testen</li>
+            <li>Fehler bei Fahrzeugen, Zugverbänden und Fahrplänen dokumentieren</li>
+            <li>Das Bahnverkehr-Chrono mit den überarbeiteten Linien testen</li>
+            <li>Das darauf basierende SEV-Chrono vorab testen</li>
+            <li>Auffälligkeiten melden und bei der Verbesserung der Mods helfen</li>
+        </ul>
+
+        <p>
+            Du musst dafür nicht selbst modden können. Wichtig sind vor allem
+            Zuverlässigkeit, eine sorgfältige Arbeitsweise und Spaß an OMSI 2.
+        </p>
+
+        <h3>Was ich euch bieten kann</h3>
+
+        <ul>
+            <li>Vorabzugriff auf ausgewählte Mods</li>
+            <li>Gemeinsame Testfahrten</li>
+            <li>Namentliche Danksagung im Handbuch</li>
+            <li>Unterstützung bei euren eigenen Projekten, soweit ich helfen kann</li>
+            <li>
+                Eine eigene Seite auf
+                <a href="https://www.pipole.de/">pipole.de</a>
+                für Beta-Tester mit Zugriff auf die jeweiligen Beta-Versionen
+            </li>
+        </ul>
+    </section>
+
+    <!-- 5. KONTAKT -->
+    <section class="staff-section" id="kontakt">
+        <h2>5. Interesse? Dann melde dich!</h2>
+
+        <p>
+            Du kannst Repaints erstellen, Fahrzeuge modden oder möchtest als
+            Beta-Tester mithelfen? Dann freue ich mich über deine Unterstützung!
+        </p>
+
+        <h3>So funktioniert die Anmeldung</h3>
+
+        <p>
+            Tretet einfach unserem
+            <a href="https://discord.gg/n5UjChukW8"
+               target="_blank"
+               rel="noopener noreferrer">Discord-Server</a>
+            bei und teilt im dafür vorgesehenen Chat mit, bei welchen Aufgaben
+            ihr gerne mithelfen möchtet. Anschließend weise ich euch die
+            passenden Rollen zu, damit ihr Zugriff auf die entsprechenden
+            Projektbereiche erhaltet.
+        </p>
+
+        <p>
+            Perspektivisch soll es außerdem möglich sein, die gewünschten
+            Rollen direkt selbst auszuwählen.
+        </p>
+
+        <h3>Weitere Kontaktmöglichkeiten</h3>
+
+        <div class="staff-contact">
+            <a href="mailto:pipole@pipole.de">
+                <strong>E-Mail</strong>
+                <span>pipole@pipole.de</span>
+            </a>
+
+            <a href="https://discord.gg/n5UjChukW8"
+               target="_blank"
+               rel="noopener noreferrer">
+                <strong>Discord</strong>
+                <span>PIPOLE Modding – Server beitreten</span>
+            </a>
+
+            <a href="https://www.pipole.de/">
+                <strong>Webseite</strong>
+                <span>www.pipole.de</span>
+            </a>
+
+            <a href="https://www.youtube.com/@pipolejourney"
+               target="_blank"
+               rel="noopener noreferrer">
+                <strong>YouTube – Pipole Journey</strong>
+                <span>@pipolejourney</span>
+            </a>
+
+            <a href="https://www.youtube.com/@pipolemusic"
+               target="_blank"
+               rel="noopener noreferrer">
+                <strong>YouTube – Pipole Music</strong>
+                <span>@pipolemusic</span>
+            </a>
+
+            <a href="https://www.youtube.com/"
+               target="_blank"
+               rel="noopener noreferrer">
+                <strong>YouTube – Pipole Group</strong>
+                <span>Offizieller Gruppenkanal</span>
+            </a>
+        </div>
+
+        <p>
+            Ich freue mich auf eure Unterstützung und darauf, das Projekt
+            gemeinsam mit euch weiterzuentwickeln!
+        </p>
+
+        <div class="staff-signature">
+            <p>Viele Grüße</p>
+            <p><strong>PIPOLE – PIPOLE Modding</strong></p>
+        </div>
+    </section>
+
+    <!-- ZURÜCK ZUR STARTSEITE -->
+    <footer class="staff-footer">
+        <a href="https://www.pipole.de/">← Zurück zur Startseite</a>
+    </footer>
+
+</main>
+
+</body>
+</html>
