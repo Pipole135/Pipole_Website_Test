@@ -186,6 +186,23 @@
       <p id="message" role="status" aria-live="polite"></p>
     </section>
 
+    
+      <div id="adminPanel" hidden>
+        <hr style="margin: 24px 0; border-color: #303340;">
+      
+        <h2>Admin-Dashboard</h2>
+        <p class="muted">Verwalte die Zugänge zu deinem Beta-Portal.</p>
+      
+        <h3>Wartende Tester</h3>
+        <button id="refreshUsersButton" type="button">
+          Liste aktualisieren
+        </button>
+      
+        <p id="pendingUsersMessage" class="muted" role="status"></p>
+        <div id="pendingUsersList"></div>
+      </div>
+
+
     <footer>
       PIPOLE Modding · Geschützter Beta-Bereich
     </footer>
@@ -212,7 +229,12 @@
   const confirmPasswordField = document.getElementById("confirmPasswordField");
   const confirmPassword = document.getElementById("confirmPassword");
   const password = document.getElementById("password");
-  const message = document.getElementById("message");
+  const message = document.getElementById("message");  
+  const adminPanel = document.getElementById("adminPanel");
+  const refreshUsersButton = document.getElementById("refreshUsersButton");
+  const pendingUsersMessage = document.getElementById("pendingUsersMessage");
+  const pendingUsersList = document.getElementById("pendingUsersList");
+
   
   let mode = "login";
   
@@ -310,18 +332,107 @@
   
         setMessage(
           checkData.isAdmin
-            ? "Willkommen im Admin-Bereich. Das Admin-Dashboard richten wir als Nächstes ein."
-            : "Anmeldung erfolgreich. Der Beta-Bereich wird als Nächstes eingerichtet."
+            ? "Willkommen im Admin-Bereich."
+            : "Anmeldung erfolgreich. Willkommen im Beta-Bereich."
         );
-      }
-    } catch (error) {
-      setMessage(error.message || "Es ist ein Fehler aufgetreten.", true);
-    } finally {
-      submitButton.disabled = false;
-    }
-  });
+        
+        if (checkData.isAdmin) {
+          adminPanel.hidden = false;
+          await loadPendingUsers();
+        } else {
+          adminPanel.hidden = true;
+        }});
 
-  async function testPendingUsers() {
+      async function loadPendingUsers() {
+      pendingUsersMessage.textContent = "Lade wartende Tester …";
+      pendingUsersList.replaceChildren();
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-users",
+        { body: { action: "list_pending" } }
+      );
+    
+      if (error) {
+        console.error("Fehler beim Laden der Tester:", error);
+        pendingUsersMessage.textContent =
+          "Die Tester-Liste konnte nicht geladen werden.";
+        return;
+      }
+    
+      const users = data?.users || [];
+    
+      if (users.length === 0) {
+        pendingUsersMessage.textContent = "Keine wartenden Tester vorhanden.";
+        return;
+      }
+    
+      pendingUsersMessage.textContent =
+        `${users.length} wartende Tester gefunden.`;
+    
+      users.forEach((user) => {
+        const item = document.createElement("div");
+        item.style.cssText =
+          "display:flex;gap:12px;align-items:center;justify-content:space-between;" +
+          "flex-wrap:wrap;padding:12px;margin:10px 0;border:1px solid #303340;border-radius:8px;";
+    
+        const info = document.createElement("div");
+        info.textContent = `${user.username || "Tester"} – ${user.email || "Keine E-Mail"}`;
+    
+        const actions = document.createElement("div");
+        actions.style.cssText = "display:flex;gap:8px;";
+    
+        const approveButton = document.createElement("button");
+        approveButton.type = "button";
+        approveButton.textContent = "Freischalten";
+        approveButton.addEventListener("click", () =>
+          updateTester(user.id, "approve")
+        );
+    
+        const rejectButton = document.createElement("button");
+        rejectButton.type = "button";
+        rejectButton.textContent = "Ablehnen";
+        rejectButton.addEventListener("click", () =>
+          updateTester(user.id, "reject")
+        );
+    
+        actions.append(approveButton, rejectButton);
+        item.append(info, actions);
+        pendingUsersList.append(item);
+      });
+    }
+    
+    async function updateTester(userId, action) {
+      const actionText = action === "approve" ? "freischalten" : "ablehnen";
+    
+      if (!confirm(`Möchtest du diesen Tester wirklich ${actionText}?`)) {
+        return;
+      }
+    
+      pendingUsersMessage.textContent = "Änderung wird gespeichert …";
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-users",
+        { body: { action, userId } }
+      );
+    
+      if (error || data?.error) {
+        console.error("Tester-Verwaltung fehlgeschlagen:", error || data);
+        pendingUsersMessage.textContent =
+          "Die Änderung ist fehlgeschlagen. Bitte prüfe die Browser-Konsole.";
+        return;
+      }
+    
+      pendingUsersMessage.textContent =
+        action === "approve"
+          ? "Tester wurde freigeschaltet."
+          : "Tester wurde abgelehnt.";
+    
+      await loadPendingUsers();
+    }
+    
+    async function testPendingUsers() {
+      await loadPendingUsers();
+    }
     const { data, error } = await supabaseClient.functions.invoke(
       "beta-admin-users",
       {
@@ -342,6 +453,8 @@
   }
   
   window.testPendingUsers = testPendingUsers;
+
+  refreshUsersButton.addEventListener("click", loadPendingUsers);
     
   setMode("login");
   </script>
