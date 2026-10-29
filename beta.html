@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Beta-Portal | PIPOLE Modding</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #101116;
+      --surface: #1b1d25;
+      --border: #303340;
+      --text: #f3f4f6;
+      --muted: #a7aab6;
+      --accent: #7c83ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px;
+      background: var(--background);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+      display: grid;
+      place-items: center;
+    }
+
+    main {
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .brand h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    .brand p,
+    .muted {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    label {
+      display: block;
+      margin: 16px 0 8px;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #111219;
+      color: var(--text);
+      font: inherit;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 16px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .switch {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .switch button {
+      margin: 0;
+      background: #303340;
+    }
+
+    .switch button[aria-pressed="true"] {
+      background: var(--accent);
+    }
+
+    #message {
+      margin-top: 16px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header class="brand">
+      <h1>PIPOLE Modding</h1>
+      <p>Beta-Tester-Portal</p>
+    </header>
+
+    <section class="panel">
+      <div class="switch">
+        <button id="loginTab" type="button" aria-pressed="true">
+          Anmelden
+        </button>
+        <button id="registerTab" type="button" aria-pressed="false">
+          Registrieren
+        </button>
+      </div>
+
+      <h2 id="formTitle">Willkommen zurück</h2>
+      <p class="muted" id="formDescription">
+        Melde dich mit deinem freigegebenen Beta-Konto an.
+      </p>
+
+      <form id="authForm">
+        <label for="email">E-Mail-Adresse</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+        >
+
+        <div id="passwordFields">
+          <label for="password">Passwort</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            minlength="8"
+            required
+          >
+
+          <div id="confirmPasswordField" hidden>
+            <label for="confirmPassword">Passwort wiederholen</label>
+            <input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+            >
+          </div>
+        </div>
+
+        <button id="submitButton" type="submit">Anmelden</button>
+      </form>
+
+      <p id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <footer>
+      PIPOLE Modding · Geschützter Beta-Bereich
+    </footer>
+  </main>
+
+  <script>
+    const loginTab = document.getElementById("loginTab");
+    const registerTab = document.getElementById("registerTab");
+    const authForm = document.getElementById("authForm");
+    const formTitle = document.getElementById("formTitle");
+    const formDescription = document.getElementById("formDescription");
+    const submitButton = document.getElementById("submitButton");
+    const confirmPasswordField =
+      document.getElementById("confirmPasswordField");
+    const confirmPassword =
+      document.getElementById("confirmPassword");
+    const password = document.getElementById("password");
+    const message = document.getElementById("message");
+
+    let mode = "login";
+
+    function setMode(nextMode) {
+      mode = nextMode;
+      const registering = mode === "register";
+
+      loginTab.setAttribute("aria-pressed", String(!registering));
+      registerTab.setAttribute("aria-pressed", String(registering));
+
+      formTitle.textContent = registering
+        ? "Beta-Zugang beantragen"
+        : "Willkommen zurück";
+
+      formDescription.textContent = registering
+        ? "Erstelle dein Konto. Der Zugang wird erst nach Admin-Freigabe aktiviert."
+        : "Melde dich mit deinem Beta-Konto an.";
+
+      submitButton.textContent = registering
+        ? "Konto erstellen"
+        : "Anmelden";
+
+      password.autocomplete = registering
+        ? "new-password"
+        : "current-password";
+
+      confirmPasswordField.hidden = !registering;
+      confirmPassword.required = registering;
+      message.textContent = "";
+    }
+
+    loginTab.addEventListener("click", () => setMode("login"));
+    registerTab.addEventListener("click", () => setMode("register"));
+
+    authForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (mode === "register" && password.value !== confirmPassword.value) {
+        message.textContent = "Die Passwörter stimmen nicht überein.";
+        return;
+      }
+
+      message.textContent =
+        "Die Anmeldung ist noch nicht verbunden. Bitte warte auf die Einrichtung.";
+    });
+  </script>
+</body>
+</html>
