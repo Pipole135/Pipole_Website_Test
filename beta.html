@@ -193,67 +193,136 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
+  
   <script>
-    
-    const SUPABASE_URL = "https://lsoweghxhvvudznkjpch.supabase.co/rest/v1/";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ks9TQt19oSe8iVlH914H-A_jk-6D4Wl";
-    const loginTab = document.getElementById("loginTab");
-    const registerTab = document.getElementById("registerTab");
-    const authForm = document.getElementById("authForm");
-    const formTitle = document.getElementById("formTitle");
-    const formDescription = document.getElementById("formDescription");
-    const submitButton = document.getElementById("submitButton");
-    const confirmPasswordField =
-      document.getElementById("confirmPasswordField");
-    const confirmPassword =
-      document.getElementById("confirmPassword");
-    const password = document.getElementById("password");
-    const message = document.getElementById("message");
-
-    let mode = "login";
-
-    function setMode(nextMode) {
-      mode = nextMode;
-      const registering = mode === "register";
-
-      loginTab.setAttribute("aria-pressed", String(!registering));
-      registerTab.setAttribute("aria-pressed", String(registering));
-
-      formTitle.textContent = registering
-        ? "Beta-Zugang beantragen"
-        : "Willkommen zurück";
-
-      formDescription.textContent = registering
-        ? "Erstelle dein Konto. Der Zugang wird erst nach Admin-Freigabe aktiviert."
-        : "Melde dich mit deinem Beta-Konto an.";
-
-      submitButton.textContent = registering
-        ? "Konto erstellen"
-        : "Anmelden";
-
-      password.autocomplete = registering
-        ? "new-password"
-        : "current-password";
-
-      confirmPasswordField.hidden = !registering;
-      confirmPassword.required = registering;
-      message.textContent = "";
+  const SUPABASE_URL = "https://lsoweghxhvvudznkjpch.supabase.co/rest/v1/";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_ks9TQt19oSe8iVlH914H-A_jk-6D4Wl";
+  
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+  
+  const loginTab = document.getElementById("loginTab");
+  const registerTab = document.getElementById("registerTab");
+  const authForm = document.getElementById("authForm");
+  const formTitle = document.getElementById("formTitle");
+  const formDescription = document.getElementById("formDescription");
+  const submitButton = document.getElementById("submitButton");
+  const confirmPasswordField = document.getElementById("confirmPasswordField");
+  const confirmPassword = document.getElementById("confirmPassword");
+  const password = document.getElementById("password");
+  const message = document.getElementById("message");
+  
+  let mode = "login";
+  
+  function setMessage(text, isError = false) {
+    message.textContent = text;
+    message.style.color = isError ? "#ff8585" : "#a7e8b0";
+  }
+  
+  function setMode(nextMode) {
+    mode = nextMode;
+    const registering = mode === "register";
+  
+    loginTab.setAttribute("aria-pressed", String(!registering));
+    registerTab.setAttribute("aria-pressed", String(registering));
+  
+    formTitle.textContent = registering
+      ? "Beta-Zugang beantragen"
+      : "Willkommen zurück";
+  
+    formDescription.textContent = registering
+      ? "Erstelle dein Konto. Du erhältst erst nach Admin-Freigabe Zugriff."
+      : "Melde dich mit deinem Beta-Konto an.";
+  
+    submitButton.textContent = registering ? "Konto erstellen" : "Anmelden";
+    password.autocomplete = registering ? "new-password" : "current-password";
+    confirmPasswordField.hidden = !registering;
+    confirmPassword.required = registering;
+    setMessage("");
+  }
+  
+  loginTab.addEventListener("click", () => setMode("login"));
+  registerTab.addEventListener("click", () => setMode("register"));
+  
+  authForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+  
+    const email = document.getElementById("email").value.trim();
+    const passwordValue = password.value;
+  
+    if (mode === "register" && passwordValue !== confirmPassword.value) {
+      setMessage("Die Passwörter stimmen nicht überein.", true);
+      return;
     }
-
-    loginTab.addEventListener("click", () => setMode("login"));
-    registerTab.addEventListener("click", () => setMode("register"));
-
-    authForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      if (mode === "register" && password.value !== confirmPassword.value) {
-        message.textContent = "Die Passwörter stimmen nicht überein.";
-        return;
+  
+    submitButton.disabled = true;
+    setMessage(mode === "register" ? "Konto wird erstellt …" : "Anmeldung läuft …");
+  
+    try {
+      if (mode === "register") {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password: passwordValue,
+          options: {
+            emailRedirectTo: "https://www.pipole.de/beta.html"
+          }
+        });
+  
+        if (error) throw error;
+  
+        if (data.session) {
+          await supabaseClient.auth.signOut();
+        }
+  
+        setMessage(
+          "Registrierungsanfrage übermittelt. Falls die E-Mail-Bestätigung aktiv ist, prüfe dein Postfach. Zugriff erhältst du erst nach Freigabe."
+        );
+      } else {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password: passwordValue
+        });
+  
+        if (error) throw error;
+  
+        const { data: checkData, error: checkError } =
+          await supabaseClient.functions.invoke("beta-admin-check");
+  
+        if (checkError) {
+          await supabaseClient.auth.signOut();
+          throw new Error("Kontostatus konnte nicht geprüft werden. Bitte später erneut versuchen.");
+        }
+  
+        if (!checkData || checkData.authenticated !== true) {
+          await supabaseClient.auth.signOut();
+          throw new Error("Anmeldung konnte nicht bestätigt werden.");
+        }
+  
+        if (checkData.isApproved !== true) {
+          await supabaseClient.auth.signOut();
+          setMessage(
+            "Dein Konto wartet noch auf Freigabe. Bitte versuche es später erneut."
+          );
+          return;
+        }
+  
+        setMessage(
+          checkData.isAdmin
+            ? "Willkommen im Admin-Bereich. Das Admin-Dashboard richten wir als Nächstes ein."
+            : "Anmeldung erfolgreich. Der Beta-Bereich wird als Nächstes eingerichtet."
+        );
       }
-
-      message.textContent =
-        "Die Anmeldung ist noch nicht verbunden. Bitte warte auf die Einrichtung.";
-    });
+    } catch (error) {
+      setMessage(error.message || "Es ist ein Fehler aufgetreten.", true);
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+  
+  setMode("login");
   </script>
+
 </body>
 </html>
