@@ -268,6 +268,7 @@
   loginTab.addEventListener("click", () => setMode("login"));
   registerTab.addEventListener("click", () => setMode("register"));
   
+  
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
   
@@ -299,7 +300,7 @@
         }
   
         setMessage(
-          "Registrierungsanfrage übermittelt. Falls die E-Mail-Bestätigung aktiv ist, prüfe dein Postfach. Zugriff erhältst du erst nach Freigabe."
+          "Registrierungsanfrage übermittelt. Zugriff erhältst du erst nach Freigabe."
         );
       } else {
         const { error } = await supabaseClient.auth.signInWithPassword({
@@ -324,6 +325,7 @@
   
         if (checkData.isApproved !== true) {
           await supabaseClient.auth.signOut();
+          adminPanel.hidden = true;
           setMessage(
             "Dein Konto wartet noch auf Freigabe. Bitte versuche es später erneut."
           );
@@ -335,13 +337,21 @@
             ? "Willkommen im Admin-Bereich."
             : "Anmeldung erfolgreich. Willkommen im Beta-Bereich."
         );
-        
+  
         if (checkData.isAdmin) {
           adminPanel.hidden = false;
           await loadPendingUsers();
         } else {
           adminPanel.hidden = true;
-        });
+        }
+      }
+    } catch (error) {
+      setMessage(error.message || "Es ist ein Fehler aufgetreten.", true);
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
 
       async function loadPendingUsers() {
       pendingUsersMessage.textContent = "Lade wartende Tester …";
