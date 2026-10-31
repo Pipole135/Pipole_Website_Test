@@ -443,26 +443,8 @@
     async function testPendingUsers() {
       await loadPendingUsers();
     }
-    const { data, error } = await supabaseClient.functions.invoke(
-      "beta-admin-users",
-      {
-        body: { action: "list_pending" }
-      }
-    );
-  
-    if (error) {
-      console.error("Admin-Test fehlgeschlagen:", error);
-      setMessage("Admin-Test fehlgeschlagen. Details stehen in der Browser-Konsole.", true);
-      return;
-    }
-  
-    console.log("Wartende Registrierungen:", data);
-    setMessage(
-      `Admin-Test erfolgreich. Wartende Konten: ${(data.users || []).length}`
-    );
-  }
-  
-  window.testPendingUsers = testPendingUsers;
+    
+    window.testPendingUsers = testPendingUsers;
 
   refreshUsersButton.addEventListener("click", loadPendingUsers);
     
