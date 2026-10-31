@@ -356,6 +356,7 @@
         if (checkData.isAdmin) {
           adminPanel.hidden = false;
           await loadPendingUsers();
+          await loadApprovedUsers();
         } else {
           adminPanel.hidden = true;
         }
@@ -454,7 +455,88 @@
     
       await loadPendingUsers();
     }
+
     
+    async function loadApprovedUsers() {
+      approvedUsersMessage.textContent = "Lade aktive Tester …";
+      approvedUsersList.replaceChildren();
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-users",
+        { body: { action: "list_approved" } }
+      );
+    
+      if (error || data?.error) {
+        console.error("Fehler beim Laden aktiver Tester:", error || data);
+        approvedUsersMessage.textContent =
+          "Die aktiven Tester konnten nicht geladen werden.";
+        return;
+      }
+    
+      const users = data?.users || [];
+    
+      if (users.length === 0) {
+        approvedUsersMessage.textContent =
+          "Es gibt noch keine freigeschalteten Tester.";
+        return;
+      }
+    
+      approvedUsersMessage.textContent =
+        `${users.length} aktive Tester gefunden.`;
+    
+      users.forEach((user) => {
+        const item = document.createElement("div");
+        item.style.cssText =
+          "display:flex;gap:12px;align-items:center;justify-content:space-between;" +
+          "flex-wrap:wrap;padding:12px;margin:10px 0;" +
+          "border:1px solid #303340;border-radius:8px;";
+    
+        const info = document.createElement("div");
+        info.textContent =
+          `${user.username || "Tester"} – ${user.email || "Keine E-Mail"}`;
+    
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.textContent = "Account löschen";
+        deleteButton.style.background = "#b83232";
+    
+        deleteButton.addEventListener("click", () =>
+          deleteTester(user.id, user.username || user.email || "Tester")
+        );
+    
+        item.append(info, deleteButton);
+        approvedUsersList.append(item);
+      });
+    }
+    
+    async function deleteTester(userId, username) {
+      const confirmed = confirm(
+        `Möchtest du den Account von "${username}" wirklich dauerhaft löschen?\n\n` +
+        "Der Tester verliert dadurch seinen Zugang zum Beta-Portal."
+      );
+    
+      if (!confirmed) return;
+    
+      approvedUsersMessage.textContent = "Account wird gelöscht …";
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-users",
+        { body: { action: "delete", userId } }
+      );
+    
+      if (error || data?.error || data?.success !== true) {
+        console.error("Account-Löschung fehlgeschlagen:", error || data);
+        approvedUsersMessage.textContent =
+          data?.error || "Der Account konnte nicht gelöscht werden.";
+        return;
+      }
+    
+      approvedUsersMessage.textContent = "Account erfolgreich gelöscht.";
+    
+      await loadApprovedUsers();
+    }
+    
+        
     async function testPendingUsers() {
       await loadPendingUsers();
     }
@@ -462,6 +544,8 @@
     window.testPendingUsers = testPendingUsers;
 
   refreshUsersButton.addEventListener("click", loadPendingUsers);
+
+  refreshApprovedButton.addEventListener("click", loadApprovedUsers);
     
   setMode("login");
   </script>
