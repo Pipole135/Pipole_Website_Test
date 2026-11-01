@@ -184,6 +184,7 @@
       </form>
 
       <p id="message" role="status" aria-live="polite"></p>
+      <button id="logoutButton" type="button" hidden>Abmelden</button>
     </section>
 
     
@@ -405,6 +406,16 @@
     
     </div>
 
+    <section id="testerPanel" class="panel" hidden style="margin-top:24px;">
+      <h2>Beta-Downloads</h2>
+      <p class="muted">Hier findest du die freigegebenen Mods und ihre verfügbaren Versionen.</p>
+      <button id="refreshTesterModsButton" type="button">Mods aktualisieren</button>
+      <p id="testerModsMessage" class="muted" role="status"></p>
+      <div id="testerModsList"></div>
+      <hr style="margin:24px 0;border-color:#303340;">
+      <p class="muted">Bei Passwortproblemen schreibe bitte dem Admin. Ein Zurücksetzen ist zum Start nicht vorgesehen; der Account kann bei Bedarf gelöscht und neu registriert werden.</p>
+    </section>
+
     <footer>
       PIPOLE Modding · Geschützter Beta-Bereich
     </footer>
@@ -431,7 +442,8 @@
   const confirmPasswordField = document.getElementById("confirmPasswordField");
   const confirmPassword = document.getElementById("confirmPassword");
   const password = document.getElementById("password");
-  const message = document.getElementById("message");  
+  const message = document.getElementById("message");
+  const logoutButton = document.getElementById("logoutButton");
   const adminPanel = document.getElementById("adminPanel");
   const testerManagementPanel = document.getElementById("testerManagementPanel");
   const fileManagementPanel = document.getElementById("fileManagementPanel");
@@ -475,6 +487,10 @@
   const refreshApprovedButton = document.getElementById("refreshApprovedButton");
   const approvedUsersMessage = document.getElementById("approvedUsersMessage");
   const approvedUsersList = document.getElementById("approvedUsersList");
+  const testerPanel = document.getElementById("testerPanel");
+  const testerModsMessage = document.getElementById("testerModsMessage");
+  const testerModsList = document.getElementById("testerModsList");
+  const refreshTesterModsButton = document.getElementById("refreshTesterModsButton");
 
   
   let mode = "login";
@@ -567,12 +583,20 @@
         if (checkData.isApproved !== true) {
           await supabaseClient.auth.signOut();
           adminPanel.hidden = true;
+          testerPanel.hidden = true;
+          authForm.hidden = false;
+          loginTab.disabled = false;
+          registerTab.disabled = false;
           setMessage(
             "Dein Konto wartet noch auf Freigabe. Bitte versuche es später erneut."
           );
           return;
         }
   
+        logoutButton.hidden = false;
+        loginTab.disabled = true;
+        registerTab.disabled = true;
+        authForm.hidden = true;
         setMessage(
           checkData.isAdmin
             ? "Willkommen im Admin-Bereich."
@@ -581,10 +605,13 @@
   
         if (checkData.isAdmin) {
           adminPanel.hidden = false;
+          testerPanel.hidden = true;
           await loadPendingUsers();
           await loadApprovedUsers();
         } else {
           adminPanel.hidden = true;
+          testerPanel.hidden = false;
+          await loadTesterMods();
         }
       }
     } catch (error) {
@@ -1135,6 +1162,17 @@
           `${mod.beta_mod_versions?.length || 0} Versionen`;
         
         item.append(title, description, versions);
+
+        const modActions = document.createElement("div");
+        modActions.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;";
+        const editModButton = document.createElement("button");
+        editModButton.type = "button"; editModButton.textContent = "Mod bearbeiten";
+        editModButton.addEventListener("click", () => editMod(mod));
+        const deleteModButton = document.createElement("button");
+        deleteModButton.type = "button"; deleteModButton.textContent = "Mod löschen";
+        deleteModButton.style.background = "#b83232";
+        deleteModButton.addEventListener("click", () => deleteMod(mod));
+        modActions.append(editModButton, deleteModButton); item.append(modActions);
         
         // Vorhandene Versionen anzeigen
         const modVersions = mod.beta_mod_versions || [];
@@ -1246,6 +1284,11 @@
               requirementsContainer,
               downloadButton
             );
+            const deleteVersionButton = document.createElement("button");
+            deleteVersionButton.type = "button"; deleteVersionButton.textContent = "Version löschen";
+            deleteVersionButton.style.background = "#b83232";
+            deleteVersionButton.addEventListener("click", () => deleteVersion(version, mod.name));
+            versionBox.append(deleteVersionButton);
             
             item.append(versionBox);
             });
@@ -1263,6 +1306,65 @@
       });
     }
     
+    async function callModAdmin(body) {
+      const { data, error } = await supabaseClient.functions.invoke("beta-admin-mods", { body });
+      if (error || data?.error || data?.success === false) throw new Error(data?.error || error?.message || "Aktion fehlgeschlagen.");
+      return data;
+    }
+
+    async function editMod(mod) {
+      const name = prompt("Neuer Mod-Name:", mod.name); if (name === null) return;
+      if (!name.trim()) { alert("Der Name darf nicht leer sein."); return; }
+      const description = prompt("Neue Beschreibung:", mod.description || ""); if (description === null) return;
+      try { await callModAdmin({ action: "update_mod", modId: mod.id, name: name.trim(), description: description.trim() }); await loadMods(); }
+      catch (err) { alert(err.message); }
+    }
+
+    async function deleteMod(mod) {
+      if (!confirm(`Mod "${mod.name}" einschließlich aller Versionen und Dateien dauerhaft löschen?`)) return;
+      try { await callModAdmin({ action: "delete_mod", modId: mod.id }); if (selectedModId === mod.id) closeVersionForm(); await loadMods(); }
+      catch (err) { modsMessage.textContent = err.message; }
+    }
+
+    async function deleteVersion(version, modName) {
+      if (!confirm(`Version ${version.version} von "${modName}" dauerhaft löschen?`)) return;
+      try { await callModAdmin({ action: "delete_version", versionId: version.id }); await loadMods(); }
+      catch (err) { modsMessage.textContent = err.message; }
+    }
+
+    async function loadTesterMods() {
+      testerModsMessage.textContent = "Lade freigegebene Mods …"; testerModsList.replaceChildren();
+      const { data: mods, error } = await supabaseClient.from("beta_mods")
+        .select("id,name,description,created_at,beta_mod_versions(id,version,description,changelog,storage_path,created_at,beta_mod_version_requirements(beta_requirements(name)))")
+        .order("created_at", { ascending: false });
+      if (error) { console.error(error); testerModsMessage.textContent = "Downloads konnten nicht geladen werden. Prüfe bitte deine Freigabe."; return; }
+      if (!mods?.length) { testerModsMessage.textContent = "Aktuell sind noch keine Mods verfügbar."; return; }
+      testerModsMessage.textContent = `${mods.length} Mods verfügbar.`;
+      mods.forEach(mod => {
+        const card = document.createElement("div"); card.style.cssText = "padding:14px;margin:12px 0;border:1px solid #303340;border-radius:8px;";
+        const h = document.createElement("h3"); h.textContent = mod.name;
+        const d = document.createElement("p"); d.className = "muted"; d.textContent = mod.description || "Keine Beschreibung vorhanden."; card.append(h,d);
+        const versions = [...(mod.beta_mod_versions || [])].sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
+        if (!versions.length) { const e=document.createElement("p"); e.className="muted"; e.textContent="Noch keine Version veröffentlicht."; card.append(e); }
+        versions.forEach((v,i) => {
+          const box=document.createElement("div"); box.style.cssText="padding:12px;margin:10px 0;border:1px solid #303340;border-radius:8px;";
+          const t=document.createElement("strong"); t.textContent=`Version ${v.version}${i===0 ? " · Neueste Version" : ""}`;
+          const desc=document.createElement("p"); desc.className="muted"; desc.textContent=v.description || "Keine Beschreibung vorhanden.";
+          const log=document.createElement("p"); log.className="muted"; log.textContent=v.changelog ? `Changelog: ${v.changelog}` : "Kein Changelog vorhanden.";
+          const req=(v.beta_mod_version_requirements||[]).map(x=>Array.isArray(x.beta_requirements)?x.beta_requirements[0]:x.beta_requirements).filter(Boolean).map(x=>x.name);
+          const rq=document.createElement("p"); rq.className="muted"; rq.textContent=req.length?`Voraussetzungen: ${req.join(", ")}`:"Keine besonderen Requirements.";
+          const btn=document.createElement("button"); btn.type="button"; btn.textContent="Herunterladen";
+          btn.addEventListener("click",async()=>{ btn.disabled=true; btn.textContent="Download wird vorbereitet …"; try {
+            const filename=v.storage_path.split("/").pop().replace(/^[0-9a-f-]+-/i,"");
+            const {data,error}=await supabaseClient.storage.from("beta-files").createSignedUrl(v.storage_path,60,{download:filename});
+            if(error||!data?.signedUrl) throw new Error("Download-Link konnte nicht erstellt werden.");
+            window.open(data.signedUrl,"_blank","noopener,noreferrer");
+          } catch(err){alert(err.message||"Download fehlgeschlagen.");} finally{btn.disabled=false;btn.textContent="Herunterladen";} });
+          box.append(t,desc,log,rq,btn); card.append(box);
+        }); testerModsList.append(card);
+      });
+    }
+
     async function deleteTester(userId, username) {
       const confirmed = confirm(
         `Möchtest du den Account von "${username}" wirklich dauerhaft löschen?\n\n` +
@@ -1330,8 +1432,70 @@
   createVersionButton.addEventListener("click", createVersion);
 
   createRequirementButton.addEventListener("click", createRequirement);
-    
+  refreshTesterModsButton.addEventListener("click", loadTesterMods);
+  logoutButton.addEventListener("click", async () => {
+    logoutButton.disabled = true;
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) throw error;
+      adminPanel.hidden = true;
+      testerPanel.hidden = true;
+      logoutButton.hidden = true;
+      authForm.hidden = false;
+      loginTab.disabled = false;
+      registerTab.disabled = false;
+      setMode("login");
+      setMessage("Du wurdest abgemeldet.");
+    } catch (err) {
+      setMessage(err.message || "Abmeldung fehlgeschlagen.", true);
+    } finally {
+      logoutButton.disabled = false;
+    }
+  });
+  adminPanel.hidden = true;
+  testerPanel.hidden = true;
+  logoutButton.hidden = true;
   setMode("login");
+
+  // Bestehende, gültige Sitzung nach einem Neuladen wiederherstellen.
+  async function restoreExistingSession() {
+    try {
+      const { data: sessionData, error: sessionError } =
+        await supabaseClient.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!sessionData?.session) return;
+
+      const { data: checkData, error: checkError } =
+        await supabaseClient.functions.invoke("beta-admin-check");
+      if (checkError || !checkData?.authenticated || checkData.isApproved !== true) {
+        await supabaseClient.auth.signOut();
+        return;
+      }
+
+      logoutButton.hidden = false;
+      loginTab.disabled = true;
+      registerTab.disabled = true;
+      authForm.hidden = true;
+
+      if (checkData.isAdmin) {
+        adminPanel.hidden = false;
+        testerPanel.hidden = true;
+        setMessage("Sitzung wiederhergestellt. Willkommen im Admin-Bereich.");
+        await Promise.all([loadPendingUsers(), loadApprovedUsers()]);
+      } else {
+        adminPanel.hidden = true;
+        testerPanel.hidden = false;
+        setMessage("Sitzung wiederhergestellt. Willkommen im Beta-Bereich.");
+        await loadTesterMods();
+      }
+    } catch (err) {
+      console.error("Sitzung konnte nicht wiederhergestellt werden:", err);
+      setMessage("Deine Sitzung konnte nicht geprüft werden. Bitte melde dich erneut an.", true);
+    }
+  }
+
+  // Bei einer aktiven Sitzung Login-Formular ausblenden; Logout setzt es wieder zurück.
+  restoreExistingSession();
   </script>
 
 </body>
