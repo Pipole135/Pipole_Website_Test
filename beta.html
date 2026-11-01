@@ -932,14 +932,43 @@
                 ? `Changelog: ${version.changelog}`
                 : "Kein Changelog vorhanden.";
         
+            const downloadButton = document.createElement("button");
+            downloadButton.type = "button";
+            downloadButton.textContent = "Herunterladen";
+            
+            downloadButton.addEventListener("click", async () => {
+              downloadButton.disabled = true;
+              downloadButton.textContent = "Download wird vorbereitet …";
+            
+              try {
+                const { data, error } = await supabaseClient.storage
+                  .from("beta-files")
+                  .createSignedUrl(version.storage_path, 60);
+            
+                if (error || !data?.signedUrl) {
+                  throw new Error("Download-Link konnte nicht erstellt werden.");
+                }
+            
+                window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+            
+              } catch (err) {
+                console.error("Download fehlgeschlagen:", err);
+                alert(err.message || "Download fehlgeschlagen.");
+              } finally {
+                downloadButton.disabled = false;
+                downloadButton.textContent = "Herunterladen";
+              }
+            });
+            
             versionBox.append(
               versionTitle,
               versionDescription,
-              changelog
+              changelog,
+              downloadButton
             );
-        
+            
             item.append(versionBox);
-          });
+            });
         
         const addVersionButton = document.createElement("button");
         addVersionButton.type = "button";
