@@ -903,6 +903,44 @@
         versions.textContent =
           `${mod.beta_mod_versions?.length || 0} Versionen`;
         
+        item.append(title, description, versions);
+        
+        // Vorhandene Versionen anzeigen
+        const modVersions = mod.beta_mod_versions || [];
+        
+        modVersions
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))
+          .forEach((version) => {
+            const versionBox = document.createElement("div");
+        
+            versionBox.style.cssText =
+              "padding:12px;margin:10px 0;" +
+              "border:1px solid #303340;border-radius:8px;";
+        
+            const versionTitle = document.createElement("strong");
+            versionTitle.textContent = `Version ${version.version}`;
+        
+            const versionDescription = document.createElement("p");
+            versionDescription.className = "muted";
+            versionDescription.textContent =
+              version.description || "Keine Beschreibung vorhanden.";
+        
+            const changelog = document.createElement("p");
+            changelog.className = "muted";
+            changelog.textContent =
+              version.changelog
+                ? `Changelog: ${version.changelog}`
+                : "Kein Changelog vorhanden.";
+        
+            versionBox.append(
+              versionTitle,
+              versionDescription,
+              changelog
+            );
+        
+            item.append(versionBox);
+          });
+        
         const addVersionButton = document.createElement("button");
         addVersionButton.type = "button";
         addVersionButton.textContent = "Version hinzufügen";
@@ -911,7 +949,7 @@
           openVersionForm(mod.id, mod.name);
         });
         
-        item.append(title, description, versions, addVersionButton);
+        item.append(addVersionButton);
         modsList.append(item);
       });
     }
