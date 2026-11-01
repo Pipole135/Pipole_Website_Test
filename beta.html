@@ -236,6 +236,38 @@
     
         <hr style="margin: 20px 0; border-color: #303340;">
     
+        <h3>Neue Mod erstellen</h3>
+        
+        <div style="margin: 12px 0;">
+          <label for="newModName">Mod-Name</label>
+          <input
+            id="newModName"
+            type="text"
+            placeholder="z. B. SEV-Pack Ahlheim"
+            maxlength="120"
+            style="width: 100%; margin-top: 6px;"
+          >
+        </div>
+        
+        <div style="margin: 12px 0;">
+          <label for="newModDescription">Beschreibung</label>
+          <textarea
+            id="newModDescription"
+            placeholder="Beschreibe deine Mod ..."
+            maxlength="5000"
+            rows="4"
+            style="width: 100%; margin-top: 6px;"
+          ></textarea>
+        </div>
+        
+        <button id="createModButton" type="button">
+          Mod erstellen
+        </button>
+        
+        <p id="createModMessage" class="muted" role="status"></p>
+        
+        <hr style="margin: 28px 0; border-color: #303340;">
+        
         <h3>Vorhandene Mods</h3>
         <button id="refreshModsButton" type="button">
           Mods aktualisieren
@@ -285,6 +317,10 @@
   const refreshModsButton = document.getElementById("refreshModsButton");
   const modsMessage = document.getElementById("modsMessage");
   const modsList = document.getElementById("modsList");
+  const newModName = document.getElementById("newModName");
+  const newModDescription = document.getElementById("newModDescription");
+  const createModButton = document.getElementById("createModButton");
+  const createModMessage = document.getElementById("createModMessage");
   const refreshUsersButton = document.getElementById("refreshUsersButton");
   const pendingUsersMessage = document.getElementById("pendingUsersMessage");
   const pendingUsersList = document.getElementById("pendingUsersList");
@@ -551,6 +587,49 @@
       });
     }
 
+    async function createMod() {
+      const name = newModName.value.trim();
+      const description = newModDescription.value.trim();
+    
+      if (!name) {
+        createModMessage.textContent =
+          "Bitte gib einen Mod-Namen ein.";
+        return;
+      }
+    
+      createModButton.disabled = true;
+      createModMessage.textContent = "Mod wird erstellt …";
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-mods",
+        {
+          body: {
+            action: "create_mod",
+            name,
+            description
+          }
+        }
+      );
+    
+      createModButton.disabled = false;
+    
+      if (error || data?.error || data?.success !== true) {
+        console.error("Mod-Erstellung fehlgeschlagen:", error || data);
+    
+        createModMessage.textContent =
+          data?.error || "Die Mod konnte nicht erstellt werden.";
+        return;
+      }
+    
+      newModName.value = "";
+      newModDescription.value = "";
+    
+      createModMessage.textContent =
+        `Mod "${data.mod.name}" wurde erfolgreich erstellt.`;
+    
+      await loadMods();
+    }
+    
     async function loadMods() {
       modsMessage.textContent = "Lade Mods …";
       modsList.replaceChildren();
@@ -662,6 +741,8 @@
   refreshApprovedButton.addEventListener("click", loadApprovedUsers);
 
   refreshModsButton.addEventListener("click", loadMods);
+
+  createModButton.addEventListener("click", createMod);
     
   setMode("login");
   </script>
