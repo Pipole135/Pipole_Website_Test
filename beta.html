@@ -1147,22 +1147,65 @@
             versionBox.style.cssText =
               "padding:12px;margin:10px 0;" +
               "border:1px solid #303340;border-radius:8px;";
-        
+            
             const versionTitle = document.createElement("strong");
             versionTitle.textContent = `Version ${version.version}`;
-        
+            
             const versionDescription = document.createElement("p");
             versionDescription.className = "muted";
             versionDescription.textContent =
               version.description || "Keine Beschreibung vorhanden.";
-        
+            
             const changelog = document.createElement("p");
             changelog.className = "muted";
             changelog.textContent =
               version.changelog
                 ? `Changelog: ${version.changelog}`
                 : "Kein Changelog vorhanden.";
-        
+            
+            // Requirements anzeigen
+            const requirementsContainer = document.createElement("div");
+            requirementsContainer.style.cssText = "margin:12px 0;";
+            
+            const requirementsTitle = document.createElement("strong");
+            requirementsTitle.textContent = "Benötigte Requirements:";
+            
+            requirementsContainer.append(requirementsTitle);
+            
+            const requirementLinks =
+              version.beta_mod_version_requirements || [];
+            
+            const requirementNames = requirementLinks
+              .map((link) => {
+                const requirement = link.beta_requirements;
+            
+                if (Array.isArray(requirement)) {
+                  return requirement[0]?.name;
+                }
+            
+                return requirement?.name;
+              })
+              .filter(Boolean);
+            
+            if (requirementNames.length > 0) {
+              const requirementList = document.createElement("ul");
+            
+              requirementNames.forEach((name) => {
+                const entry = document.createElement("li");
+                entry.textContent = name;
+                entry.style.margin = "5px 0";
+                requirementList.append(entry);
+              });
+            
+              requirementsContainer.append(requirementList);
+            } else {
+              const noRequirements = document.createElement("p");
+              noRequirements.className = "muted";
+              noRequirements.textContent = "Keine besonderen Requirements.";
+              requirementsContainer.append(noRequirements);
+            }
+            
+            // Download-Button
             const downloadButton = document.createElement("button");
             downloadButton.type = "button";
             downloadButton.textContent = "Herunterladen";
@@ -1174,7 +1217,7 @@
               try {
                 const originalFileName =
                   version.storage_path.split("/").pop().replace(/^[0-9a-f-]+-/i, "");
-                
+            
                 const { data, error } = await supabaseClient.storage
                   .from("beta-files")
                   .createSignedUrl(version.storage_path, 60, {
@@ -1200,6 +1243,7 @@
               versionTitle,
               versionDescription,
               changelog,
+              requirementsContainer,
               downloadButton
             );
             
