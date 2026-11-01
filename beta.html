@@ -275,7 +275,72 @@
     
         <p id="modsMessage" class="muted" role="status"></p>
         <div id="modsList"></div>
-    
+
+        <div id="versionFormPanel" hidden>
+
+          <hr style="margin: 28px 0; border-color: #303340;">
+        
+          <h3>Neue Version hinzufügen</h3>
+        
+          <p id="versionFormModName" class="muted"></p>
+        
+          <div style="margin: 12px 0;">
+            <label for="newVersionNumber">Versionsnummer</label>
+            <input
+              id="newVersionNumber"
+              type="text"
+              placeholder="z. B. 1.0"
+              maxlength="40"
+              style="width: 100%; margin-top: 6px;"
+            >
+          </div>
+        
+          <div style="margin: 12px 0;">
+            <label for="newVersionDescription">Beschreibung</label>
+            <textarea
+              id="newVersionDescription"
+              placeholder="Beschreibung dieser Version ..."
+              maxlength="5000"
+              rows="3"
+              style="width: 100%; margin-top: 6px;"
+            ></textarea>
+          </div>
+        
+          <div style="margin: 12px 0;">
+            <label for="newVersionChangelog">Changelog</label>
+            <textarea
+              id="newVersionChangelog"
+              placeholder="Was hat sich in dieser Version geändert?"
+              maxlength="10000"
+              rows="4"
+              style="width: 100%; margin-top: 6px;"
+            ></textarea>
+          </div>
+        
+          <div style="margin: 12px 0;">
+            <label for="newVersionFile">Mod-Datei</label>
+            <input
+              id="newVersionFile"
+              type="file"
+              style="width: 100%; margin-top: 6px;"
+            >
+            <p class="muted">
+              Wähle die Datei für diese Version aus.
+            </p>
+          </div>
+          
+          <div id="versionUploadMessage" class="muted" role="status"></div>
+        
+          <button id="createVersionButton" type="button">
+            Version hochladen
+          </button>
+          
+          <button id="closeVersionFormButton" type="button">
+            Formular schließen
+          </button>
+        
+        </div>
+        
       </div>
     
     </div>
@@ -321,6 +386,19 @@
   const newModDescription = document.getElementById("newModDescription");
   const createModButton = document.getElementById("createModButton");
   const createModMessage = document.getElementById("createModMessage");
+  const versionFormPanel = document.getElementById("versionFormPanel");
+  const versionFormModName = document.getElementById("versionFormModName");
+  
+  const newVersionNumber = document.getElementById("newVersionNumber");
+  const newVersionDescription = document.getElementById("newVersionDescription");
+  const newVersionChangelog = document.getElementById("newVersionChangelog");
+  const newVersionFile = document.getElementById("newVersionFile");
+  const versionUploadMessage = document.getElementById("versionUploadMessage");
+  const createVersionButton = document.getElementById("createVersionButton");
+  const closeVersionFormButton = document.getElementById("closeVersionFormButton");
+  
+  let selectedModId = null;
+  let selectedModName = "";
   const refreshUsersButton = document.getElementById("refreshUsersButton");
   const pendingUsersMessage = document.getElementById("pendingUsersMessage");
   const pendingUsersList = document.getElementById("pendingUsersList");
@@ -587,6 +665,154 @@
       });
     }
 
+    function openVersionForm(modId, modName) {
+      selectedModId = modId;
+      selectedModName = modName;
+    
+      versionFormModName.textContent =
+        `Neue Version für: ${modName}`;
+    
+      newVersionNumber.value = "";
+      newVersionDescription.value = "";
+      newVersionChangelog.value = "";
+    
+      versionFormPanel.hidden = false;
+    
+      versionFormPanel.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+    
+    function closeVersionForm() {
+      versionFormPanel.hidden = true;
+      selectedModId = null;
+      selectedModName = "";
+    }
+    
+    closeVersionFormButton.addEventListener(
+      "click",
+      closeVersionForm
+    );
+
+    async function createVersion() {
+      const version = newVersionNumber.value.trim();
+      const description = newVersionDescription.value.trim();
+      const changelog = newVersionChangelog.value.trim();
+      const file = newVersionFile.files[0];
+    
+      if (!selectedModId) {
+        versionUploadMessage.textContent =
+          "Bitte wähle zuerst eine Mod aus.";
+        return;
+      }
+    
+      if (!version) {
+        versionUploadMessage.textContent =
+          "Bitte gib eine Versionsnummer ein.";
+        return;
+      }
+    
+      if (!file) {
+        versionUploadMessage.textContent =
+          "Bitte wähle eine Datei aus.";
+        return;
+      }
+    
+      if (file.size > 100 * 1024 * 1024) {
+        versionUploadMessage.textContent =
+          "Die Datei darf maximal 100 MB groß sein.";
+        return;
+      }
+    
+      createVersionButton.disabled = true;
+      versionUploadMessage.textContent =
+        "Datei wird hochgeladen …";
+    
+      const safeFileName = file.name
+        .replace(/[^a-zA-Z0-9._-]/g, "_");
+    
+      const storagePath =
+        `mods/${selectedModId}/${crypto.randomUUID()}-${safeFileName}`;
+    
+      let uploaded = false;
+    
+      try {
+        const { error: uploadError } = await supabaseClient.storage
+          .from("beta-files")
+          .upload(storagePath, file, {
+            upsert: false
+          });
+    
+        if (uploadError) {
+          throw new Error(
+            "Datei-Upload fehlgeschlagen: " + uploadError.message
+          );
+        }
+    
+        uploaded = true;
+    
+        versionUploadMessage.textContent =
+          "Datei hochgeladen. Speichere Versionsdaten …";
+    
+        const { data, error } =
+          await supabaseClient.functions.invoke(
+            "beta-admin-mods",
+            {
+              body: {
+                action: "create_version",
+                modId: selectedModId,
+                version,
+                description,
+                changelog,
+                storagePath,
+                requirementIds: []
+              }
+            }
+          );
+    
+        if (error || data?.error || data?.success !== true) {
+          throw new Error(
+            data?.error || error?.message ||
+            "Versionsdaten konnten nicht gespeichert werden."
+          );
+        }
+    
+        versionUploadMessage.textContent =
+          `Version ${version} wurde erfolgreich hochgeladen.`;
+    
+        newVersionNumber.value = "";
+        newVersionDescription.value = "";
+        newVersionChangelog.value = "";
+        newVersionFile.value = "";
+    
+        await loadMods();
+    
+      } catch (err) {
+        console.error("Versions-Upload fehlgeschlagen:", err);
+    
+        if (uploaded) {
+          const { error: cleanupError } =
+            await supabaseClient.storage
+              .from("beta-files")
+              .remove([storagePath]);
+    
+          if (cleanupError) {
+            console.error(
+              "Aufräumen der hochgeladenen Datei fehlgeschlagen:",
+              cleanupError
+            );
+          }
+        }
+    
+        versionUploadMessage.textContent =
+          err.message || "Beim Upload ist ein Fehler aufgetreten.";
+    
+      } finally {
+        createVersionButton.disabled = false;
+      }
+    }
+    
     async function createMod() {
       const name = newModName.value.trim();
       const description = newModDescription.value.trim();
@@ -676,8 +902,16 @@
         versions.className = "muted";
         versions.textContent =
           `${mod.beta_mod_versions?.length || 0} Versionen`;
-    
-        item.append(title, description, versions);
+        
+        const addVersionButton = document.createElement("button");
+        addVersionButton.type = "button";
+        addVersionButton.textContent = "Version hinzufügen";
+        
+        addVersionButton.addEventListener("click", () => {
+          openVersionForm(mod.id, mod.name);
+        });
+        
+        item.append(title, description, versions, addVersionButton);
         modsList.append(item);
       });
     }
@@ -743,6 +977,8 @@
   refreshModsButton.addEventListener("click", loadMods);
 
   createModButton.addEventListener("click", createMod);
+
+  createVersionButton.addEventListener("click", createVersion);
     
   setMode("login");
   </script>
