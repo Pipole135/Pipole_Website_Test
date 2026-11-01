@@ -941,9 +941,14 @@
               downloadButton.textContent = "Download wird vorbereitet …";
             
               try {
+                const originalFileName =
+                  version.storage_path.split("/").pop().replace(/^[0-9a-f-]+-/i, "");
+                
                 const { data, error } = await supabaseClient.storage
                   .from("beta-files")
-                  .createSignedUrl(version.storage_path, 60);
+                  .createSignedUrl(version.storage_path, 60, {
+                    download: originalFileName
+                  });
             
                 if (error || !data?.signedUrl) {
                   throw new Error("Download-Link konnte nicht erstellt werden.");
