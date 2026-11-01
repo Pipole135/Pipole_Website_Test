@@ -187,32 +187,66 @@
     </section>
 
     
-      <div id="adminPanel" hidden>
-        <hr style="margin: 24px 0; border-color: #303340;">
-      
-        <h2>Admin-Dashboard</h2>
-        <p class="muted">Verwalte die Zugänge zu deinem Beta-Portal.</p>
-      
+    <div id="adminPanel" hidden>
+      <hr style="margin: 24px 0; border-color: #303340;">
+    
+      <h2>Admin-Dashboard</h2>
+      <p class="muted">Verwalte die Zugänge zu deinem Beta-Portal.</p>
+    
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0;">
+        <button id="showTesterManagementButton" type="button">
+          Tester-Verwaltung
+        </button>
+    
+        <button id="showFileManagementButton" type="button">
+          Dateiverwaltung
+        </button>
+      </div>
+    
+      <div id="testerManagementPanel">
+    
         <h3>Wartende Tester</h3>
         <button id="refreshUsersButton" type="button">
           Liste aktualisieren
         </button>
-      
+    
         <p id="pendingUsersMessage" class="muted" role="status"></p>
         <div id="pendingUsersList"></div>
-      
+    
         <hr style="margin: 28px 0; border-color: #303340;">
-      
+    
         <h3>Aktive Tester</h3>
         <p class="muted">Verwalte bereits freigeschaltete Beta-Tester.</p>
-      
+    
         <button id="refreshApprovedButton" type="button">
           Aktive Tester aktualisieren
         </button>
-      
+    
         <p id="approvedUsersMessage" class="muted" role="status"></p>
         <div id="approvedUsersList"></div>
+    
       </div>
+    
+      <div id="fileManagementPanel" hidden>
+    
+        <h3>Dateiverwaltung</h3>
+        <p class="muted">
+          Verwalte deine Mods, Versionen, Dateien und Requirements.
+        </p>
+    
+        <hr style="margin: 20px 0; border-color: #303340;">
+    
+        <h3>Vorhandene Mods</h3>
+        <button id="refreshModsButton" type="button">
+          Mods aktualisieren
+        </button>
+    
+        <p id="modsMessage" class="muted" role="status"></p>
+        <div id="modsList"></div>
+    
+      </div>
+    
+    </div>
 
     <footer>
       PIPOLE Modding · Geschützter Beta-Bereich
@@ -242,6 +276,15 @@
   const password = document.getElementById("password");
   const message = document.getElementById("message");  
   const adminPanel = document.getElementById("adminPanel");
+  const testerManagementPanel = document.getElementById("testerManagementPanel");
+  const fileManagementPanel = document.getElementById("fileManagementPanel");
+  
+  const showTesterManagementButton = document.getElementById("showTesterManagementButton");
+  const showFileManagementButton = document.getElementById("showFileManagementButton");
+  
+  const refreshModsButton = document.getElementById("refreshModsButton");
+  const modsMessage = document.getElementById("modsMessage");
+  const modsList = document.getElementById("modsList");
   const refreshUsersButton = document.getElementById("refreshUsersButton");
   const pendingUsersMessage = document.getElementById("pendingUsersMessage");
   const pendingUsersList = document.getElementById("pendingUsersList");
@@ -507,6 +550,58 @@
         approvedUsersList.append(item);
       });
     }
+
+    async function loadMods() {
+      modsMessage.textContent = "Lade Mods …";
+      modsList.replaceChildren();
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-mods",
+        { body: { action: "list_mods" } }
+      );
+    
+      if (error || data?.error) {
+        console.error("Fehler beim Laden der Mods:", error || data);
+        modsMessage.textContent =
+          data?.error || "Die Mods konnten nicht geladen werden.";
+        return;
+      }
+    
+      const mods = data?.mods || [];
+    
+      if (mods.length === 0) {
+        modsMessage.textContent =
+          "Es sind noch keine Mods vorhanden.";
+        return;
+      }
+    
+      modsMessage.textContent =
+        `${mods.length} Mods gefunden.`;
+    
+      mods.forEach((mod) => {
+        const item = document.createElement("div");
+    
+        item.style.cssText =
+          "padding:14px;margin:12px 0;" +
+          "border:1px solid #303340;border-radius:8px;";
+    
+        const title = document.createElement("h4");
+        title.textContent = mod.name;
+    
+        const description = document.createElement("p");
+        description.className = "muted";
+        description.textContent =
+          mod.description || "Keine Beschreibung vorhanden.";
+    
+        const versions = document.createElement("p");
+        versions.className = "muted";
+        versions.textContent =
+          `${mod.beta_mod_versions?.length || 0} Versionen`;
+    
+        item.append(title, description, versions);
+        modsList.append(item);
+      });
+    }
     
     async function deleteTester(userId, username) {
       const confirmed = confirm(
@@ -542,9 +637,31 @@
     
     window.testPendingUsers = testPendingUsers;
 
+    function showTesterManagement() {
+      testerManagementPanel.hidden = false;
+      fileManagementPanel.hidden = true;
+    }
+    
+    function showFileManagement() {
+      testerManagementPanel.hidden = true;
+      fileManagementPanel.hidden = false;
+    }
+    
+    showTesterManagementButton.addEventListener(
+      "click",
+      showTesterManagement
+    );
+    
+    showFileManagementButton.addEventListener(
+      "click",
+      showFileManagement
+    );
+
   refreshUsersButton.addEventListener("click", loadPendingUsers);
 
   refreshApprovedButton.addEventListener("click", loadApprovedUsers);
+
+  refreshModsButton.addEventListener("click", loadMods);
     
   setMode("login");
   </script>
