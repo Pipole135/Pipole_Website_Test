@@ -330,7 +330,21 @@
           </div>
           
           <div id="versionUploadMessage" class="muted" role="status"></div>
-        
+
+          <hr style="margin: 20px 0; border-color: #303340;">
+
+          <h4>Benötigte Requirements</h4>
+          
+          <p class="muted">
+            Wähle alle Voraussetzungen aus, die für diese Version benötigt werden.
+          </p>
+          
+          <div id="versionRequirementsList">
+            <p class="muted">Requirements werden geladen …</p>
+          </div>
+          
+          <p id="versionRequirementsMessage" class="muted" role="status"></p>
+          
           <button id="createVersionButton" type="button">
             Version hochladen
           </button>
@@ -448,6 +462,8 @@
   const newVersionChangelog = document.getElementById("newVersionChangelog");
   const newVersionFile = document.getElementById("newVersionFile");
   const versionUploadMessage = document.getElementById("versionUploadMessage");
+  const versionRequirementsList = document.getElementById("versionRequirementsList");
+  const versionRequirementsMessage = document.getElementById("versionRequirementsMessage");
   const createVersionButton = document.getElementById("createVersionButton");
   const closeVersionFormButton = document.getElementById("closeVersionFormButton");
   
@@ -731,6 +747,8 @@
       newVersionChangelog.value = "";
     
       versionFormPanel.hidden = false;
+
+      loadVersionRequirements();
     
       versionFormPanel.scrollIntoView({
         behavior: "smooth",
@@ -749,6 +767,67 @@
       closeVersionForm
     );
 
+    async function loadVersionRequirements() {
+      versionRequirementsList.replaceChildren();
+    
+      versionRequirementsMessage.textContent =
+        "Lade Requirements …";
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-mods",
+        {
+          body: { action: "list_requirements" }
+        }
+      );
+    
+      if (error || data?.error) {
+        console.error("Requirements konnten nicht geladen werden:", error || data);
+    
+        versionRequirementsMessage.textContent =
+          data?.error || "Requirements konnten nicht geladen werden.";
+        return;
+      }
+    
+      const requirements = data?.requirements || [];
+    
+      if (requirements.length === 0) {
+        versionRequirementsMessage.textContent =
+          "Es sind noch keine Requirements vorhanden.";
+        return;
+      }
+    
+      versionRequirementsMessage.textContent =
+        `${requirements.length} Requirements verfügbar.`;
+    
+      requirements.forEach((requirement) => {
+        const label = document.createElement("label");
+    
+        label.style.cssText =
+          "display:flex;align-items:center;gap:10px;" +
+          "padding:10px;margin:6px 0;" +
+          "border:1px solid #303340;border-radius:8px;";
+    
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = requirement.id;
+        checkbox.className = "version-requirement-checkbox";
+    
+        const name = document.createElement("span");
+        name.textContent = requirement.name;
+    
+        label.append(checkbox, name);
+    
+        if (requirement.description) {
+          const description = document.createElement("small");
+          description.className = "muted";
+          description.textContent = requirement.description;
+          label.append(description);
+        }
+    
+        versionRequirementsList.append(label);
+      });
+    }
+    
     async function createRequirement() {
       const name = newRequirementName.value.trim();
       const description = newRequirementDescription.value.trim();
@@ -864,7 +943,11 @@
                 description,
                 changelog,
                 storagePath,
-                requirementIds: []
+                requirementIds: Array.from(
+                  versionRequirementsList.querySelectorAll(
+                    ".version-requirement-checkbox:checked"
+                  )
+                ).map((checkbox) => checkbox.value)
               }
             }
           );
