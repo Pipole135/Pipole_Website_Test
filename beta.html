@@ -340,6 +340,52 @@
           </button>
         
         </div>
+
+        <hr style="margin: 28px 0; border-color: #303340;">
+
+        <h3>Requirements verwalten</h3>
+        
+        <p class="muted">
+          Verwalte hier die dauerhaft gespeicherten Voraussetzungen für deine Mods.
+        </p>
+        
+        <div style="margin: 12px 0;">
+          <label for="newRequirementName">Neues Requirement</label>
+          <input
+            id="newRequirementName"
+            type="text"
+            placeholder="z. B. OMSI 2 Hauptspiel"
+            maxlength="160"
+            style="width: 100%; margin-top: 6px;"
+          >
+        </div>
+        
+        <div style="margin: 12px 0;">
+          <label for="newRequirementDescription">Beschreibung (optional)</label>
+          <textarea
+            id="newRequirementDescription"
+            placeholder="Weitere Informationen zum Requirement ..."
+            maxlength="2000"
+            rows="3"
+            style="width: 100%; margin-top: 6px;"
+          ></textarea>
+        </div>
+        
+        <button id="createRequirementButton" type="button">
+          Requirement speichern
+        </button>
+        
+        <p id="requirementMessage" class="muted" role="status"></p>
+        
+        <hr style="margin: 20px 0; border-color: #303340;">
+        
+        <h3>Gespeicherte Requirements</h3>
+        
+        <button id="refreshRequirementsButton" type="button">
+          Requirements aktualisieren
+        </button>
+        
+        <div id="requirementsList"></div>
         
       </div>
     
@@ -386,6 +432,14 @@
   const newModDescription = document.getElementById("newModDescription");
   const createModButton = document.getElementById("createModButton");
   const createModMessage = document.getElementById("createModMessage");
+  const newRequirementName = document.getElementById("newRequirementName");
+  const newRequirementDescription = document.getElementById("newRequirementDescription");
+  
+  const createRequirementButton = document.getElementById("createRequirementButton");
+  const requirementMessage = document.getElementById("requirementMessage");
+  
+  const refreshRequirementsButton = document.getElementById("refreshRequirementsButton");
+  const requirementsList = document.getElementById("requirementsList");
   const versionFormPanel = document.getElementById("versionFormPanel");
   const versionFormModName = document.getElementById("versionFormModName");
   
@@ -695,6 +749,50 @@
       closeVersionForm
     );
 
+    async function createRequirement() {
+      const name = newRequirementName.value.trim();
+      const description = newRequirementDescription.value.trim();
+    
+      if (!name) {
+        requirementMessage.textContent =
+          "Bitte gib einen Namen für das Requirement ein.";
+        return;
+      }
+    
+      createRequirementButton.disabled = true;
+      requirementMessage.textContent =
+        "Requirement wird gespeichert …";
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-mods",
+        {
+          body: {
+            action: "create_requirement",
+            name,
+            description
+          }
+        }
+      );
+    
+      createRequirementButton.disabled = false;
+    
+      if (error || data?.error || data?.success !== true) {
+        console.error("Requirement konnte nicht gespeichert werden:", error || data);
+    
+        requirementMessage.textContent =
+          data?.error || "Requirement konnte nicht gespeichert werden.";
+        return;
+      }
+    
+      newRequirementName.value = "";
+      newRequirementDescription.value = "";
+    
+      requirementMessage.textContent =
+        `Requirement "${data.requirement.name}" wurde gespeichert.`;
+    
+      await loadRequirements();
+    }
+    
     async function createVersion() {
       const version = newVersionNumber.value.trim();
       const description = newVersionDescription.value.trim();
@@ -854,6 +952,56 @@
         `Mod "${data.mod.name}" wurde erfolgreich erstellt.`;
     
       await loadMods();
+    }
+
+    async function loadRequirements() {
+      requirementMessage.textContent = "Lade Requirements …";
+      requirementsList.replaceChildren();
+    
+      const { data, error } = await supabaseClient.functions.invoke(
+        "beta-admin-mods",
+        {
+          body: { action: "list_requirements" }
+        }
+      );
+    
+      if (error || data?.error) {
+        console.error("Requirements konnten nicht geladen werden:", error || data);
+    
+        requirementMessage.textContent =
+          data?.error || "Requirements konnten nicht geladen werden.";
+        return;
+      }
+    
+      const requirements = data?.requirements || [];
+    
+      if (requirements.length === 0) {
+        requirementMessage.textContent =
+          "Es sind noch keine Requirements gespeichert.";
+        return;
+      }
+    
+      requirementMessage.textContent =
+        `${requirements.length} Requirements gespeichert.`;
+    
+      requirements.forEach((requirement) => {
+        const item = document.createElement("div");
+    
+        item.style.cssText =
+          "padding:12px;margin:10px 0;" +
+          "border:1px solid #303340;border-radius:8px;";
+    
+        const name = document.createElement("strong");
+        name.textContent = requirement.name;
+    
+        const description = document.createElement("p");
+        description.className = "muted";
+        description.textContent =
+          requirement.description || "Keine Beschreibung vorhanden.";
+    
+        item.append(name, description);
+        requirementsList.append(item);
+      });
     }
     
     async function loadMods() {
@@ -1048,9 +1196,13 @@
 
   refreshModsButton.addEventListener("click", loadMods);
 
+  refreshRequirementsButton.addEventListener("click", loadRequirements);
+
   createModButton.addEventListener("click", createMod);
 
   createVersionButton.addEventListener("click", createVersion);
+
+  createRequirementButton.addEventListener("click", createRequirement);
     
   setMode("login");
   </script>
